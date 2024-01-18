@@ -73,7 +73,7 @@ Generation for ROR plants is calculated using the hydropower generation formula 
 ##### Reservoir Facilities
 Generation for hydropower plants with reservoirs is calculated using the hydropower generation formula, with the head estimated using simulated volumetric storage, total volumetric capacity, and assuming that the shape of the reservoir is a tetrahedron:
 
-$$ h=H^3\sqrt{\frac{v}{v_max}} \ (6) $$
+$$ h=H^3\sqrt{\frac{v}{v_{max}}} \ (6) $$
 
 | Variable | Variable in Code    | Definition                    | Units | Value                      |
 |----------|---------------------|-------------------------------|-------|----------------------------|
