@@ -234,7 +234,7 @@ use_run_of_river      | True    | boolean |
 
 #### Notebook
 
-The `wmpy-power.ipynb` file provides a Jupyter notebook illustration of running the model and plotting results.
+The `tutorial.ipynb` file provides a Jupyter notebook illustration of running the model and plotting results.
 
 #### Working with Parquet files
 
@@ -245,8 +245,9 @@ df = pd.read_parquet('/path/to/parquet/file.parquet')
 df['my_new_column'] = 42
 df.to_parquet('/path/to/new/parquet/file.parquet')
 ```
+#### Legacy Files
+wmpy_power was originally developed in MATLAB. The model provides a utility to convert Excel and MATLAB files to parquet files. This functionality can also be used to build inputs in Excel and convert them into parquet.
 
-The model provides a utility to convert the Excel and Matlab files (as used by the Matlab model) to parquet files:
 ```python
 from wmpy_power import Model
 
