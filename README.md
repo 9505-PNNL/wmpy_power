@@ -30,7 +30,7 @@ $$ P=\rho ghQ \eta \ (1) $$
 |-----------------|--------------------------------------------------------|------------------------------------------|---------------|-----------------------------------|
 |     ρ           |     lumped in with gravitational acceleration; 9800    |     density of water                     |     kg m-3    |     1000                          |
 |     g           |     lumped in with density of water; 9800              |     gravitational acceleration           |     m3s-2     |     9.81                          |
-|     h           |     plant_head_m                                       |     hydraulic head of the dam            |     m         |     plant-specific                |
+|     h           |     plant_head_m                                       |     gross hydraulic head of the hydropower facility            |     m         |     plant-specific                |
 |     Q           |     flow                                               |     turbine flow rate                    |     m3s-1     |     plant-specific timeseries     |
 |     η           |     not directly used; see below                       |     non-dimensional efficiency   term    |     –         |     plant-specific                |
 
@@ -47,7 +47,7 @@ This efficiency term is calibrated at the BA level in step one of the calibratio
 
 Q is adjusted to account for both plant-specific maximum flow limits and spill. Maximum flow limits are imposed by limiting Q to a maximum value using Q<sub>max</sub> where:
 
-$$ Q_max =S_f \ (3) $$ \
+$$ Q_{max} =S_f \ (3) $$ \
 $$ Q =min(Q, Q_max) \ (4) $$
 
 |     Variable    |     Variable in Code                   |     Definition                        |     Units     |     Value                                       |     Range      |
