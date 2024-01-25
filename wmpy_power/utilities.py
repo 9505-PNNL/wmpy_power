@@ -1,7 +1,40 @@
 from functools import wraps
+import io
 import logging
+from pathlib import Path
+import requests
+import sys
 from timeit import default_timer as timer
+from tqdm import tqdm
 from typing import Callable
+import zipfile
+
+
+data_manifest = {
+    'tutorial': 'https://zenodo.org/records/10530347/files/wmpy_power_tutorial_wauw.zip?download=1',
+}
+
+
+def download_data(data: str = 'tutorial', to: str = './'):
+    url = data_manifest[data]
+    destination = Path(to).mkdir(parents=True, exist_ok=True)
+    r = requests.get(url, stream=True)
+    with io.BytesIO() as stream:
+        with tqdm.wrapattr(
+            stream,
+            'write',
+            file=sys.stdout,
+            miniters=1,
+            desc=url,
+            total=int(r.headers.get('content-length', 0))
+        ) as file:
+            for chunk in r.iter_content(chunk_size=4096):
+                file.write(chunk)
+        with zipfile.ZipFile(stream) as zipped:
+            # extract each file in the zip to the destination
+            for f in zipped.namelist():
+                zipped.extract(f, destination)
+
 
 def pretty_timer(seconds: float) -> str:
     """

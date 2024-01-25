@@ -1094,6 +1094,7 @@ class Model:
             ba_calibration["balancing_authority"] = ba
             calibrations.append(ba_calibration)
             output_name = f"{self.output_path}/{ba}_plant_calibrations"
+            Path(output_name).parent.mkdir(parents=True, exist_ok=True)
             if self.output_type == "parquet":
                 ba_calibration.to_parquet(f"{output_name}.parquet", index=False)
             else:
