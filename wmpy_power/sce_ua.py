@@ -20,7 +20,12 @@ def shuffled_complex_evolution_algorithm(
     random_number_generator: np.random.Generator = None,
     seed: int = None,
 ) -> Tuple[np.ndarray, float, str]:
-    # TODO docstrings
+    """
+    Attempt to find the optimal minimization of a parameter space for a given scoring function.
+    Implemented based on Duan et al., 1993: https://doi.org/10.1007/BF00939380.
+    This implementation assumes that parallelization gains will be realized outside of this method,
+    i.e. that multiple problems are solving in parallel rather than implementing a parallel version of this algorithm.
+    """
 
     rng = random_number_generator
     if rng is None:
@@ -43,7 +48,6 @@ def shuffled_complex_evolution_algorithm(
         population[0, :] = initial_population
 
     # score the populations
-    # TODO can i vectorize this?
     scores = np.zeros(population.shape[0])
     for i in range(len(scores)):
         scores[i] = scoring_function(
@@ -194,7 +198,12 @@ def generate_new_point(
     random_number_generator: np.random.Generator = None,
     seed: int = None,
 ) -> Tuple[np.ndarray, float, int]:
-    # TODO doc strings
+    """
+    Generate a new point within the parameter space.
+    First try a reflection about the centroid.
+    If score is worse, try a contraction about the centroid.
+    If score is still worse, return a random point within the bounds.
+    """
 
     rng = random_number_generator
     if rng is None:

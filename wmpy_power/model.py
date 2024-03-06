@@ -723,12 +723,12 @@ class Model:
         #     warnings.warn(str(nyear_sim) + ' years simulated, but only ' +
         #         str(nyear_eval) + ' used in evaluation for ' +
         #         str(reservoir_parameters.eia_plant_id), RuntimeWarning)
-
-        kge = np.sqrt(
-            ((np.corrcoef(observed_generation, monthly_generation)[0, 1] - 1) ** 2)
-            + (((np.std(monthly_generation) / np.std(observed_generation)) - 1) ** 2)
-            + (((np.mean(monthly_generation) / np.mean(observed_generation)) - 1) ** 2)
-        )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            kge = np.sqrt(
+                ((np.corrcoef(observed_generation, monthly_generation)[0, 1] - 1) ** 2)
+                + (((np.std(monthly_generation) / np.std(observed_generation)) - 1) ** 2)
+                + (((np.mean(monthly_generation) / np.mean(observed_generation)) - 1) ** 2)
+            )
 
         return kge
 
