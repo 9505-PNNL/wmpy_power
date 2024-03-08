@@ -1,14 +1,84 @@
-# wmpy_power
+# wmpy-power
 
-`wmpy_power` is a hydropower generation simulation model that uses a physically-based representation of hydropower generation. The model parameterizes production using physically-meaningful parameters that are calibrated using a reference generation dataset.
+`wmpy-power` is a hydropower simulation model developed to support long-term planning and climate impacts studies. It simulates hydropower production at the facility-scale using simulations of managed streamflow and reservoir storage to account for the “non-stationarity” in hydropower generation to changes in hydrology, and the non-linearity in the effect that climate change has on water management. Alternative approaches for estimating hydropower use statistical methods that relate runoff directly to hydropower generation and potentially miss the complex interactions arising from human water management, and hydropower production as water availability changes.
 
-#### To Do List
-* Write automated tests
-* Example batch jobs for parallel BA
+`wmpy-power` is a process-based model that incorporates hydropower facility characteristics and timeseries of streamflow and reservoir storage, and balances the need for an explicit representation of physical processes at the facility scale with a need to work with scarce data and handle biases in the data. The model is designed to simulate an entire region of hydropower facilities in bulk, where the details required to simulate each facility are incomplete. The model also accounts for biases in the input timeseries given that it was designed to work with simulations of streamflow and reservoir storage. `wmpy-power` is unique as a hydropower simulation model in that it explicitly simulates individual facilities using a process-based approach, with less of a data requirement than other process-based models. The tradeoff is a decrease in accuracy at the facility scale, but the model is suitable for the regional scale to support long-term planning.
 
-### Documentation
+
+## Getting Started
+
+`wmpy-power` supports Python versions 3.9 through 3.11. Use of a [virtual environment](https://docs.python.org/3/library/venv.html) is recommended for isolating dependencies.
+
+Install with `pip`:
+
+```shell
+pip install wmpy-power
+```
+
+Or, clone the repository and install from source (run from repository root):
+
+```shell
+pip install -e .
+```
+
+The main functionality of `wmpy-power` is to estimate hydropower for plants within a region using a two step process.
+
+First, calibrate a set of parameters with a two-stage optimization process (described below) using simple plant parameters and observed flow and reservoir storage.
+
+```python
+from wmpy_power import Model
+
+# set up the model
+model = Model(
+	# first year of observations
+	calibration_start_year = 2001,
+	# last year of observation
+	calibration_end_year = 2013,
+	# regional grouping, could be balancing authority, HUC4 basin, etc
+	balancing_authority = 'WAUW',
+	# paths to input files; these can point to a single file or glob to many files (described below)
+	simulated_flow_and_storage_glob = '/path/to/plant_flow_and_storage.parquet',
+	observed_hydropower_glob = '/path/to/plant_observed_hydropower.parquet',
+	reservoir_parameter_glob = '/path/to/plant_parameters.parquet',
+	# path to write output files
+	output_path = '/path/to/output/directory', 
+)
+
+# run the calibration
+calibrated_parameters = model.run()
+
+# (optional) view plots for modeled vs observed hydropower for each plant within the region
+m.plot(calibrated_parameters)
+```
+
+Second, use the calibrated parameters to forecast hydropower based on simulated flow and reservoir storage.
+
+```python
+forecasted_generation = model.get_generation(
+	calibration_parameters_path = '/path/to/output/directory/WAUW_plant_calibrations.parquet',
+	reservoir_parameters_path = '/path/to/plant_parameters.parquet',
+	flow_and_storage_path = '/path/to/plant_flow_and_storage.parquet',
+	run_name = 'wmpy-power_tutorial',
+	start_year = 2020,
+	end_year = 2025,
+	output_path = '/path/to/output/directory',
+)
+```
+
+This creates a dataframe of monthly plant level hydropower generation forecasts for each plant in the region!
+
+Note that `wmpy-power` is designed to optimize regional hydropower as opposed to individual plants, so there will likely be discrepancy at the plant level. Depending on the use case it may be advisable sum the modeled hydropower over the region. Sample calibration output of modeled versus observed hydropower at the plant level:
+
+![Modeled Hydropower](figures/flaming_gorge.png)
+
+
+The [tutorial.ipynb](notebooks/tutorial.ipynb) file provides a Jupyter notebook illustration of running the model and plotting results.
+
+
+## Functionality
+
 #### Introduction
-`wmpy_power` simulates hydropower generation using a physically-based representation
+`wmpy-power` simulates hydropower generation using a physically-based representation
 of hydropower generation ([Zhou et al., 2018](https://doi.org/10.1088/1748-9326/aad19f)).
 Hydropower generation is simulated using timeseries of inflow and storage, and plant
 characteristics including nameplate capacity, average head, and reservoir storage capacity (where applicable). Model parameters are calibrated to a reference monthly hydropower
@@ -17,12 +87,12 @@ evolution algorithm (SCE; [Duan et al., 1993](https://doi.org/10.1007/BF00939380
 A two-stage calibration is performed: first at the balancing authority (BA) scale, and
 second at the facility scale.
 
-The model is designed to work with inflow and storage simulated by the mosartwmpy
+The model is designed to work with inflow and storage simulated by the `mosartwmpy`
 routing and water management model ([Thurber et al., 2021](https://doi.org/10.21105/joss.03221)),
 however is agnostic to the source of these data.
 
 #### Calculations
-`wmpy_power` uses a simple hydropower generation formula to calculate hydropower generation:
+`wmpy-power` uses a simple hydropower generation formula to calculate hydropower generation:
 
 $$ P=\rho ghQ \eta \ (1) $$
 
@@ -38,9 +108,9 @@ This general formulation (equation 1) is modified for use in the model to accomm
 
 $$ P=\rho ghQf_b \ (2) $$
 
-| Variable | Variable in Code | Definition                                                   | Units | Value                                                   | Range    |
-|----------|------------------|--------------------------------------------------------------|-------|---------------------------------------------------------|----------|
-| fb       | efficiency_spill | non-dimensional efficiency term and bias correction factor | –     | balancing authority-specific; calibrated in step one  | 0.5-1.5  |
+| Variable | Variable in Code  | Definition                                                   | Units | Value                                                   | Range    |
+|----------|-------------------|--------------------------------------------------------------|-------|---------------------------------------------------------|----------|
+| fb       | efficiency\_spill | non-dimensional efficiency term and bias correction factor | –     | balancing authority-specific; calibrated in step one  | 0.5-1.5  |
 
 
 This efficiency term is calibrated at the BA level in step one of the calibration. NOTE: alternative groupings of plants can be used in place of BAs; the BA variable is used by the code, but values can be replaced with other grouping identifiers, for example HUC4 basins.
@@ -50,22 +120,22 @@ Q is adjusted to account for both plant-specific maximum flow limits and spill. 
 $$ Q_{max} =S_f \ (3) $$ \
 $$ Q =min(Q, Q_max) \ (4) $$
 
-|     Variable    |     Variable in Code                   |     Definition                        |     Units     |     Value                                       |     Range      |
-|-----------------|----------------------------------------|---------------------------------------|---------------|-------------------------------------------------|----------------|
-|     Qmax        |     max_discharge                      |     density of water                  |     kg m-3    |     1000                                        |                |
-|     S           |     nameplate_capacity_MW              |     nameplate capacity                |     W         |     plant-specific; from PLEXOS                 |                |
-|     fm          |     efficiency_penstock_flexibility    |     penstock   intake scale factor    |     –         |     plant-specific; calibrated   in step two    |     0.5-1.5    |
-|     g           |                                        |     gravitational acceleration        |     m3s-2     |     9.81                                        |                |
-|     h           |     head                               |     hydraulic head of the dam         |     m         |     plant-specific                              |                |
+|     Variable    |     Variable in Code                     |     Definition                        |     Units     |     Value                                       |     Range      |
+|-----------------|------------------------------------------|---------------------------------------|---------------|-------------------------------------------------|----------------|
+|     Qmax        |     max\_discharge                       |     density of water                  |     kg m-3    |     1000                                        |                |
+|     S           |     nameplate\_capacity\_MW              |     nameplate capacity                |     W         |     plant-specific; from PLEXOS                 |                |
+|     fm          |     efficiency\_penstock\_flexibility    |     penstock   intake scale factor    |     –         |     plant-specific; calibrated   in step two    |     0.5-1.5    |
+|     g           |                                          |     gravitational acceleration        |     m3s-2     |     9.81                                        |                |
+|     h           |     head                                 |     hydraulic head of the dam         |     m         |     plant-specific                              |                |
 
 Q is adjusted for spill by month using plant-specific monthly spill correction factors developed in step two of the calibration. These spill correction factors are applied as:
 
 $$ Q_sc,m =Q_m(1 -f_f,m); m = {1,2, ..., 12} \ (5) $$
 
-| Variable | Variable in Code     | Definition                                  | Units | Value                                    | Range   |
-|----------|----------------------|---------------------------------------------|-------|------------------------------------------|---------|
-| fs,m     | monthly_spill        | monthly spill correction factors            | –     | plant-specific; calibrated in step   two | 0-1     |
-| fp       | penstock_flexibility | penstock flexibility of handling   max flow | –     | plant-specific; calibrated in step   two | 0.5-1.5 |
+| Variable | Variable in Code      | Definition                                  | Units | Value                                    | Range   |
+|----------|-----------------------|---------------------------------------------|-------|------------------------------------------|---------|
+| fs,m     | monthly\_spill        | monthly spill correction factors            | –     | plant-specific; calibrated in step   two | 0-1     |
+| fp       | penstock\_flexibility | penstock flexibility of handling   max flow | –     | plant-specific; calibrated in step   two | 0.5-1.5 |
 
 ##### Run-of-River (ROR) Facilities
 Generation for ROR plants is calculated using the hydropower generation formula and setting the head (h) to a fixed value equal to the dam height.
@@ -75,12 +145,12 @@ Generation for hydropower plants with reservoirs is calculated using the hydropo
 
 $$ h=H^3\sqrt{\frac{v}{v_{max}}} \ (6) $$
 
-| Variable | Variable in Code    | Definition                    | Units | Value                      |
-|----------|---------------------|-------------------------------|-------|----------------------------|
-| h        | height              | hydraulic head of the dam     | m     | plant-specific             |
-| H        | plant_head_m        | dam height                    | m     | plant-specific             |
-| V        | storage             | reservoir storage             | m3    | plant-specific timeseries  |
-| Vmax     | storage_capacity_m3 | reservoir volumetric capacity | m3    | plant-specific             |
+| Variable | Variable in Code      | Definition                    | Units | Value                      |
+|----------|-----------------------|-------------------------------|-------|----------------------------|
+| h        | height                | hydraulic head of the dam     | m     | plant-specific             |
+| H        | plant\_head\_m        | dam height                    | m     | plant-specific             |
+| V        | storage               | reservoir storage             | m3    | plant-specific timeseries  |
+| Vmax     | storage\_capacity\_m3 | reservoir volumetric capacity | m3    | plant-specific             |
 
 ##### Shuffled Complex Evolution (SCE) Implementation
 SCE is used to implement a two-step multiscale calibration that produces the inputs required for the hydropower generation formula (equation 2). Step one of the calibration is to address the errors in annual hydro-meteorological biases at the scale of hydrologic regions. The objective function used in step one is to minimizes the mean absolute error between annual observed potential generation and annual simulated potential generation at the BA level:
@@ -101,7 +171,7 @@ $$ R = 0.04TL \ (11) $$
 |     R           |     operating reserve       |     MWh      |     calculated as 4% of the TL                       |
 |     TL          |     total load              |     MWh      |     mean of annual generation   of years provided    |
 
-The operating reserve percentage is set to as default to 4% of total load in model.py (operating_reserve_percent). This can be changed in model configuration.
+The operating reserve percentage is set to as default to 4% of total load in model.py (operating\_reserve\_percent). This can be changed in model configuration.
 
 Step two of the calibration seeks to reflect the complexity in monthly multi-objective reservoir operations and daily generation constraints. It works to improve seasonal variation for each power plant by calibrating a penstock flexibility factor (fp) and monthly spill correction factors (fs,1, fs,2,…, fs,12). The objective function used in step two is to minimize the Kling-Gupta Efficiency between simulated monthly power generation and observed monthly power generation at the plant level:
 
@@ -114,31 +184,27 @@ $$ r = cor(G_{sim}, G_{obs}) \ (13) $$
 |     Gsim        |     simulated monthly generation    |     MW       |     computed at the plant scale    |
 |     Gobs        |     observed monthly generation     |     MW       |     input at the plant scale       |
 
-#### Model Setup
-The model repository contains documentation and example code for setting up and running the model. It is built as a Python package and the scripts can be imported into a Python environment.
 
 ##### Model Inputs
-Model inputs are specified in the run script.
+Model inputs are specified using parquet files.
 
-| Input                                    |                                        |       Description                                                                                        |     Format      |
-|------------------------------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------|-----------------|
-|     daily simulated flow and storage     |     simulated_flow_and_storage_glob    |     daily simulated flow and storage, typically from a MOSART   simulation, for each hydropower plant    |     .parquet    |
-|     observed monthly power generation    |     observed_hydropower_glob           |     observed monthly hydropower generation for each hydropower   plant                                   |     .parquet    |
-|     reservoir and plant parameters       |     reservoir_parameter_glob           |     reservoir and hydropower plant static parameters                                                     |     .parquet    |
+| Input                                    |                                            |       Description                                                                                        |     Format      |
+|------------------------------------------|--------------------------------------------|----------------------------------------------------------------------------------------------------------|-----------------|
+|     daily simulated flow and storage     |     simulated\_flow\_and\_storage\_glob    |     daily simulated flow and storage, typically from a MOSART   simulation, for each hydropower plant    |     .parquet    |
+|     observed monthly power generation    |     observed\_hydropower\_glob             |     observed monthly hydropower generation for each hydropower   plant                                   |     .parquet    |
+|     reservoir and plant parameters       |     reservoir\_parameter\_glob             |     reservoir and hydropower plant static parameters                                                     |     .parquet    |
 
 
 
 Many configuration options are available for running the model. These options can be specified in a configuration yaml
 file or passed directly to the model initialization method, or both (the latter takes precedence). Most options have
-sensible defaults, but a few are required as discussed below. For the full list of configuration options, see the
-`config.yaml` file in the repository root.
+sensible defaults, but a few are required as discussed below. For the full list of configuration options, see the API section below.
 
-Dependencies are listed in the `setup.cfg` file.
-To install dependencies, run `pip install -e .` from the root directory of this repository.
 
 There are two ways to run the model. The simplest is to provide a configuration file and run the model directly:
 
 config.yaml
+
 ```yaml
 # first year of calibration data
 calibration_start_year: 1984
@@ -160,11 +226,13 @@ python wmpy_power/model.py config.yaml
 ```
 
 Alternatively, the model can be invoked from a python script or console:
+
 ```python
 from wmpy_power import Model
 
 # you can initialize the model using the configuration file:
 model = Model('config.yaml')
+
 # or directly:
 model = Model(
   calibration_start_year=1984,
@@ -174,6 +242,7 @@ model = Model(
   observed_hydropower_glob='./inputs/**/*monthly*obs*.parquet',
   reservoir_parameter_glob='./inputs/**/*PLEXOS*.parquet',
 )
+
 # or both (keyword arguments take precedence)
 model = Model(
   'config.yaml',
@@ -203,50 +272,47 @@ So far only "csv" and "parquet" formats are supported.
 
 Daily flow and storage parquet files are expected to have these columns:
 
-column       | example     | units   |
--------------|-------------|---------|
-date         | 1980-01-01  | date    |
-eia_plant_id | 153         | integer |
-flow         | 461.003906  | m^3 / s |
-storage      | 1.126790e10 | m^3     |
+column         | example     | units   |
+---------------|-------------|---------|
+date           | 1980-01-01  | date    |
+eia\_plant\_id | 153         | integer |
+flow           | 461.003906  | m^3 / s |
+storage        | 1.126790e10 | m^3     |
 
 Monthly observed hydropower parquet files are expected to have these columns:
 
-column         | example   | units   |
----------------|-----------|---------|
-year           | 1980      | integer |
-month          | 1         | integer |
-eia_plant_id   | 153       | integer |
-generation_MWh | 38221.193 | MWh     |
+column           | example   | units   |
+-----------------|-----------|---------|
+year             | 1980      | integer |
+month            | 1         | integer |
+eia\_plant\_id   | 153       | integer |
+generation_MWh   | 38221.193 | MWh     |
 
 Reservoir/plant parameter parquet files are expected to have these columns:
 
-column                | example | units   |
-----------------------|---------|---------|
-eia_plant_id          | 153     | integer |
-balancing_authority   | WAPA    | string  |
-name                  | 1980    | integer |
-nameplate_capacity_MW | 1       | MW      |
-plant_head_m          | 5123.3  | m       |
-storage_capacity_m3   | 1.5e10  | m^3     |
-use_run_of_river      | True    | boolean |
-
-
-#### Notebook
-
-The `tutorial.ipynb` file provides a Jupyter notebook illustration of running the model and plotting results.
+column                   | example | units   |
+-------------------------|---------|---------|
+eia\_plant\_id           | 153     | integer |
+balancing\_authority     | WAPA    | string  |
+name                     | 1980    | integer |
+nameplate\_capacity\_MW  | 1       | MW      |
+plant\_head\_m           | 5123.3  | m       |
+storage\_capacity\_m3    | 1.5e10  | m^3     |
+use\_run\_of\_river      | True    | boolean |
 
 #### Working with Parquet files
 
 It's easy to read and write parquet files from pandas, just `pip install pyarrow` or `conda install pyarrow`, then:
+
 ```python
 import pandas as pd
 df = pd.read_parquet('/path/to/parquet/file.parquet')
 df['my_new_column'] = 42
 df.to_parquet('/path/to/new/parquet/file.parquet')
 ```
+
 #### Legacy Files
-wmpy_power was originally developed in MATLAB. The model provides a utility to convert Excel and MATLAB files to parquet files. This functionality can also be used to build inputs in Excel and convert them into parquet.
+`wmpy-power` was originally developed in MATLAB. The model provides a utility to convert Excel and MATLAB files to parquet files. This functionality can also be used to build inputs in Excel and convert them into parquet.
 
 ```python
 from wmpy_power import Model
@@ -258,6 +324,23 @@ Model.update_legacy_input_files(
   daily_start_date='1980-01-01', # for daily flow/storage, since this isn't mentioned in the file itself, have to assume a start date
   monthly_start_date='1980-01-01', # for monthly observed hydro, since this isn't mentioned in the file itself, have to assume a start month
   output_path=None, # defaults to the same place as the input files, but with the .parquet extension
-  includes_leap_days=False, # whether or not the daily data includes entries for leap days (Tian's files don't)
+  includes_leap_days=False, # whether or not the daily data includes entries for leap days
 )
+
 ```
+
+
+## Testing
+
+`wmpy-power` includes a handful of unit tests to ensure proper behavior of the Shuffled Complex Evolution optimization algorithm and its use in the model. The test suite runs automatically when new commits are pushed to the repository. To run the tests manually, use the provided shell script `./test.sh` or directly run `python -m unittest discover wmpy_power`.
+
+
+## Contributing
+
+We welcome your feedback! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+
+## API
+
+TODO
+

@@ -377,6 +377,8 @@ class Model:
 
         # logger
         self.logger = logging.getLogger("wmpy_power")
+        for h in self.logger.handlers:
+            self.logger.removeHandler(h)
         self.logger.addHandler(logging.NullHandler())
         formatter = logging.Formatter(
             "%(asctime)s - wmpy_power: %(message)s", datefmt="%Y-%m-%d %I:%M:%S %p"
@@ -661,22 +663,23 @@ class Model:
             1 - flow_and_storage.spill
         )
 
-        if (
-            flow_and_storage[
-                flow_and_storage.modified_flow < max_discharge
-            ].modified_flow.sum()
-            / len(flow_and_storage.modified_flow)
-            < percentile_factor
-        ):
-            flow_and_storage["modified_flow"] = flow_and_storage.modified_flow / (
-                flow_and_storage.modified_flow.mean() / max_discharge
-            )
-        else:
-            flow_and_storage["modified_flow"] = np.where(
-                flow_and_storage.modified_flow > max_discharge,
-                max_discharge,
-                flow_and_storage.modified_flow,
-            )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            if (
+                flow_and_storage[
+                    flow_and_storage.modified_flow < max_discharge
+                ].modified_flow.sum()
+                / len(flow_and_storage.modified_flow)
+                < percentile_factor
+            ):
+                flow_and_storage["modified_flow"] = flow_and_storage.modified_flow / (
+                    flow_and_storage.modified_flow.mean() / max_discharge
+                )
+            else:
+                flow_and_storage["modified_flow"] = np.where(
+                    flow_and_storage.modified_flow > max_discharge,
+                    max_discharge,
+                    flow_and_storage.modified_flow,
+                )
 
         if reservoir_parameters.use_run_of_river:
             height = reservoir_parameters.plant_head_m
