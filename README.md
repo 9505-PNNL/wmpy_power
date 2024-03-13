@@ -100,7 +100,7 @@ $$ P=\rho ghQ \eta \ (1) $$
 |-----------------|--------------------------------------------------------|------------------------------------------|---------------|-----------------------------------|
 |     ρ           |     lumped in with gravitational acceleration; 9800    |     density of water                     |     kg m-3    |     1000                          |
 |     g           |     lumped in with density of water; 9800              |     gravitational acceleration           |     m3s-2     |     9.81                          |
-|     h           |     plant_head_m                                       |     gross hydraulic head of the hydropower facility            |     m         |     plant-specific                |
+|     h           |     plant\_head\_m                                       |     gross hydraulic head of the hydropower facility            |     m         |     plant-specific                |
 |     Q           |     flow                                               |     turbine flow rate                    |     m3s-1     |     plant-specific timeseries     |
 |     η           |     not directly used; see below                       |     non-dimensional efficiency   term    |     –         |     plant-specific                |
 
@@ -342,5 +342,73 @@ We welcome your feedback! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## API
 
-TODO
+`Model.run()` arguments or `config.yaml` entries; returns calibrated parameters dataframe:
 
+| argument (required in bold) | description | default |
+|-----------------------------|-------------|---------|
+| configuration\_file | path to a YAML file defining the configuration; but note that method arguments will override values in file | None |
+| **calibration\_start\_year** | start year of calibration, inclusive | |
+| **calibration\_end\_year** | end year of calibration, inclusive | |
+| **balancing\_authority** | balancing authority (or other grouping) | |
+| **simulated\_flow\_and\_storage\_glob** | path or glob to parquet files specifying daily flow and storage data by plant; see above for required columns (CSV files may also work) | |
+| **observed\_hydropower\_glob** | path or glob to parquet files specifying monthly observed hydropower by plant; see above for required columns  (CSV files may also work) | |
+| **reservoir\_parameter\_glob** | path or glob to parquet files specifying plant parameters and grouping; see above for required columns  (CSV files may also work) | |
+| output\_path | path to which output files should be written | "." |
+| output\_type | format of output files; either "csv" or "parquet" | "parquet" |
+| operating\_reserve\_percent | see discussion above | 0.04 |
+| lower\_bound\_efficiency | minimum allowed efficiency/bias correction for first stage calibration | 0.9 |
+| upper\_bound\_efficiency | maximum allowed efficiency/bias correction for first stage calibration | 2.0 |
+| lower\_bound\_percentile\_factor | minimum allowed percentile factor for first stage calibration | 0.2 |
+| upper\_bound\_percentile_factor | maximum allowed percentile factor for first stage calibration | 0.8 |
+| lower\_bound\_spill | minimum allowed spill factor for second stage calibration | 0.0 |
+| upper\_bound\_spill | maximum allowed spill factor for second stage calibration  | 1.0 |
+| lower\_bound\_penstock | minimum allowed penstock flexibility factor for second stage calibration | 0.5 |
+| upper\_bound\_penstock | maximum allowed penstock flexibility factor for second stage calibration | 1.5 |
+| efficiency\_penstock\_flexibility | penstock flexibility factor to assume during first stage calibration | 1.1 |
+| efficiency\_spill | spill factor to assume during first stage calibration | 0.0 |
+| efficiency\_number\_of_complexes | number of sub-populations to use in the SCE solver during the first stage calibration | 3 |
+| efficiency\_maximum\_trials | maximum allowed iterations of the SCE solver during the first stage calibration | 10000 |
+| efficiency\_maximum\_evolution_loops | maximum allowed evolution loops of the SCE solver during the first stage calibration | 4 |
+| efficiency\_minimum\_change_criteria | terminate the SCE solver early if solution does not improve by this percentage during the first stage calibration | 2.0 |
+| efficiency\_minimum\_geometric_range | terminate the SCE solver early if vector length of parameters does not change by this much during the first stage calibration   | 0.001 |
+| efficiency\_include\_initial\_point | whether or not to include the initial parameters in the initial population of the SCE solver during the first stage calibration | False |
+| efficiency\_alpha | alpha parameter to the SCE solver during the first stage calibration (effects "stiffness" of reflexive population member creation) | 1.0 |
+| efficiency\_beta | beta parameter to the SCE solver during the first stage calibration (effects "stiffness" of contractive population member creation) | 0.5 |
+| generation\_number\_of\_complexes | number of sub-populations to use in the SCE solver during the second stage calibration | 3 |
+| generation\_maximum\_trials | maximum allowed iterations of the SCE solver during the second stage calibration | 5000 |
+| generation\_maximum\_evolution\_loops | maximum allowed evolution loops of the SCE solver during the second stage calibration | 4 |
+| generation\_minimum\_change\_criteria | terminate the SCE solver early if solution does not improve by this percentage during the second stage calibration | 1.0 |
+| generation\_minimum\_geometric\_range | terminate the SCE solver early if vector length of parameters does not change by this much during the second stage calibration | 0.00001 |
+| generation\_include\_initial\_point | whether or not to include the initial parameters in the initial population of the SCE solver during the second stage calibration | False |
+| generation\_alpha | alpha parameter to the SCE solver during the second stage calibration (effects "stiffness" of reflexive population member creation) | 1.0 |
+| generation\_beta | beta parameter to the SCE solver during the second stage calibration (effects "stiffness" of contractive population member creation) | 0.5 |
+| seed | initialize the SCE solver's random number generator with a seed (for reproducibility), or None for random | None |
+| log\_to\_file | whether or not to create a log file with solver messages | True |
+| log\_to\_stdout | whether or not to show solver messages in std out (quite noisy especially for notebook environments) | True |
+| parallel\_tasks | how many parallel SCE solvers to allow during the second stage plant calibration (defaults to one per available hyperthread) | cpu_count(logical=False) |
+
+<br/><br/>
+
+`Model.plot()` arguments; returns list of figures
+
+| argument (required in bold) | description | default |
+|-----------------------------|-------------|---------|
+| **calibrations** | the calibrations dataframe as returned/written by the `run()` method | |
+| show_plots | whether or not to try showing each figure (requires matplotlib backend); should be disabled when working in Jupyter environment as Jupyter will show the list of figures by returned by default | True |
+
+<br/><br/>
+
+`Model.get_generation()` arguments (static method); returns generation forecast dataframe
+
+| argument (required in bold) | description | default |
+|-----------------------------|-------------|---------|
+| **calibration\_parameters\_path** | path to the output csv or parque file of model calibration | |
+| **reservoir\_parameters\_path** | path to a CSV or parquet file with plant parameters and grouping | |
+| **flow\_and\_storage\_path** | path to a CSV or parquet file with plant daily flow and storage data | |
+| **run\_name** | name to prepend to the output file after the grouping name | |
+| start_year | first year for which to calculate generation; default is all available | -np.Inf |
+| end_year | final year for which to calculate generation; default is all available | np.Inf |
+| write_output | whether or not to write the generation to file | True |
+| output_csv | whether to write the output file as CSV (otherwise parquet) | True |
+| output_path | path to which output files should be written | "." |
+| parallel_tasks | how many parallel tasks to allow in generation calculation (defaults to one per available hyperthread) | cpu_count(logical=False) |

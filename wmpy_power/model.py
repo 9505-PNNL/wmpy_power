@@ -1078,7 +1078,10 @@ class Model:
             )
             figures.append(fig)
             if show_plots:
-                fig.show(block=False)
+                try:
+                    fig.show(block=False)
+                except:
+                    pass
         return figures
 
     def _run(self) -> pd.DataFrame:
