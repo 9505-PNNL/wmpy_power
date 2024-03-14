@@ -823,7 +823,16 @@ class Model:
             else:
                 data.to_parquet(out_path, index=False)
 
-        return monthly_generation
+        monthly_generation = monthly_generation.reset_index()
+        
+        monthly_generation["date"] = pd.to_datetime(
+            monthly_generation["year"].astype(str)
+            + "-"
+            + monthly_generation["month"].astype(str)
+            + "-1"
+        )
+
+        return monthly_generation.set_index('date')
 
     def efficiency_calibration(
         self,
@@ -1030,7 +1039,7 @@ class Model:
             parameters.eia_plant_id
         ).sort_values(["year", "month"])
 
-        figures = []
+        plants = []
         for i, row in calibrations.iterrows():
             flow_and_storage = self.get_flow_storage_for_plant_ids([row.eia_plant_id])
             monthly_generation = (
@@ -1069,20 +1078,58 @@ class Model:
                 + "-1"
             )
             monthly_generation = monthly_generation.set_index("date", drop=True).drop(
-                columns=["eia_plant_id", "year", "month"]
+                columns=["year", "month"]
             )
-            fig, ax = plt.subplots()
-            monthly_generation.plot(style=["m-", "k--"], linewidth=1, ax=ax)
-            ax.set_title(
-                f"{parameters[parameters.eia_plant_id == row.eia_plant_id].iloc[0]['name']} ({row.eia_plant_id})"
+            monthly_generation['balancing_authority'] = row.balancing_authority
+            monthly_generation['name'] = row['name']
+            plants.append(monthly_generation)
+
+        plants = pd.concat(plants)
+
+        figs = []
+        for ba in plants.balancing_authority.unique():
+            subset = plants[plants.balancing_authority==ba]
+            cols = 4
+            rows = int(np.ceil(len(subset.eia_plant_id.unique()) / cols) + 1)
+            
+            fig = plt.figure(dpi=300, figsize=(19.2, 19.2))
+            gs = fig.add_gridspec(rows, cols)
+        
+            ba_ax = fig.add_subplot(gs[0, :])
+            
+            subset.groupby('date')[['modeled_generation_MWh', 'observed_generation_MWh']].sum().plot(
+                ax=ba_ax, style=["m-", "k--"], linewidth=1, 
             )
-            figures.append(fig)
-            if show_plots:
-                try:
-                    fig.show(block=False)
-                except:
-                    pass
-        return figures
+            ba_ax.set_ylabel('Generation [MWh]')
+            ba_ax.set_xlabel('')
+            ba_ax.set_title(f'{ba} Total')
+            
+            for i, plant in enumerate(subset.eia_plant_id.unique()):
+                
+                plant_subset = subset[subset.eia_plant_id == plant]
+        
+                r = 1 + i//cols
+                c = i%cols
+                
+                plant_ax = fig.add_subplot(gs[r, c])
+                plant_subset[['modeled_generation_MWh', 'observed_generation_MWh']].plot(
+                    ax=plant_ax, style=["m-", "k--"], linewidth=1, legend=False
+                )
+                plant_ax.set_ylabel('')
+                plant_ax.set_xlabel('')
+                plant_ax.set_title(f"{plant_subset.iloc[0]['name']} ({plant})")
+        
+            fig.tight_layout()
+            figs.append(fig)
+
+        if show_plots:
+            try:
+                for f in figs:
+                    f.show(block=False)
+            except:
+                pass
+        
+        return figs
 
     def _run(self) -> pd.DataFrame:
         # solve each balancing authority
