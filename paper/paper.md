@@ -20,9 +20,9 @@ authors:
     affiliation: "1, 2"
 affiliations:
   - name: Pacific Northwest National Laboratory, Richland, WA., USA
-   index: 1
+    index: 1
   - name: University of Washington, Seattle, WA., USA
-   index: 2
+    index: 2
 date: 15 March 2024
 bibliography: paper.bib
 ---
