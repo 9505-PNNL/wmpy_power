@@ -4,6 +4,7 @@ tags:
   - Python
   - hydropower
   - water management
+  - renewable energy
 authors:
   - name: Travis B. Thurber
     orcid: 0000-0002-4370-9971
