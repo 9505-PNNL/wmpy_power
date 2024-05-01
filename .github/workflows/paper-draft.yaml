@@ -1,3 +1,5 @@
+name: paper draft
+
 on:
   push:
     paths:
