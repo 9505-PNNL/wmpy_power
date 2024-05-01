@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Thurber"
+  given-names: "Travis"
+  orcid: "https://orcid.org/0000-0002-4370-9971"
+- family-names: "Broman"
+  given-names: "Daniel"
+  orcid: "https://orcid.org/0000-0001-8281-3299"
+- family-names: "Zhou"
+  given-names: "Tian"
+  orcid: "https://orcid.org/0000-0003-1582-4005"
+- family-names: "Voisin"
+  given-names: "Nathalie"
+  orcid: "https://orcid.org/0000-0002-6848-449X"
+title: "wmpy-power: A Python package for process-based regional hydropower simulation"
+version: 1.0.0
+date-released: "2024-03-06"
+url: "https://github.com/9505-PNNL/wmpy_power"
+identifiers:
+  - description: "wmpy-power: A Python package for process-based regional hydropower simulation"
+    type: doi
+    value: ""
+    date-released: "" 

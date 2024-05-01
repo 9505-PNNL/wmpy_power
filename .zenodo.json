@@ -1,0 +1,25 @@
+{
+    "title": "wmpy-power: A Python package for process-based regional hydropower simulation",
+    "creators": [
+        {
+            "name": "Travis Thurber",
+            "affiliation": "Pacific Northwest National Laboratory, Richland, WA., USA",
+            "orcid": "0000-0002-4370-9971"
+        },
+        {
+            "name": "Dan Broman",
+            "affiliation": "Pacific Northwest National Laboratory, Richland, WA., USA",
+            "orcid": "0000-0001-8281-3299"
+        },
+        {
+            "name": "Tian Zhou",
+            "affiliation": "Pacific Northwest National Laboratory, Richland, WA., USA",
+            "orcid": "0000-0003-1582-4005"
+        },
+        {
+            "name": "Nathalie Voisin",
+            "affiliation": "Pacific Northwest National Laboratory, Richland, WA., USA",
+            "orcid": "0000-0002-6848-449X"
+        }
+    ]
+}
