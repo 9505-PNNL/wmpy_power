@@ -21,6 +21,14 @@ Or, clone the repository and install from source (run from repository root):
 pip install -e .
 ```
 
+Download sample data:
+
+```python
+from wmpy_power.utilities import download_data
+
+download_data(data='tutorial', to='./input/')
+```
+
 The main functionality of `wmpy-power` is to estimate hydropower for plants within a region using a two step process.
 
 First, calibrate a set of parameters with a two-stage optimization process (described below) using simple plant parameters and observed flow and reservoir storage.
