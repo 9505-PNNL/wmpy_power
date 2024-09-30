@@ -166,12 +166,15 @@ $$ h=H^3\sqrt{\frac{v}{v_{max}}} \ (6) $$
 SCE is used to implement a two-step multiscale calibration that produces the inputs required for the hydropower generation formula (equation 2). Step one of the calibration is to address the errors in annual hydro-meteorological biases at the scale of hydrologic regions. The objective function used in step one is to minimizes the mean absolute error between annual observed potential generation and annual simulated potential generation at the BA level:
 
 $$ PG_{BA,sim} =  \sum_{i=1}^n \rho gh_i Q_i f_{p,i} \ (7) $$
+
 $$ PG_{BA,obs} =  TL_{2010} \times 0.04 + \sum_{i=1}^n G_{obs,i} \ (8) $$
+
 $$ MAE_{PG} =  \sum_{i=1}^n \lvert PG_{BA_{sim,i}} - PG_{BA_{obs,i}} \rvert \ (9) $$
 
 Potential generation is computed as:
 
 $$ PG = G + R \ (10) $$
+
 $$ R = 0.04TL \ (11) $$
 
 |     Variable    |     Definition              |     Units    |     Value                                            |
