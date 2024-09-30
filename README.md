@@ -125,25 +125,27 @@ This efficiency term is calibrated at the BA level in step one of the calibratio
 
 Q is adjusted to account for both plant-specific maximum flow limits and spill. Maximum flow limits are imposed by limiting Q to a maximum value using Q<sub>max</sub> where:
 
-$$ Q_{max} =S_f \ (3) $$ \
-$$ Q =min(Q, Q_max) \ (4) $$
+$$ Q_{max} =Sf_p / \rho gh \ (3) $$
+
+$$ Q =min(Q, Q_{max}) \ (4) $$
+
+
 
 |     Variable    |     Variable in Code                     |     Definition                        |     Units     |     Value                                       |     Range      |
 |-----------------|------------------------------------------|---------------------------------------|---------------|-------------------------------------------------|----------------|
 |     Qmax        |     max\_discharge                       |     density of water                  |     kg m-3    |     1000                                        |                |
 |     S           |     nameplate\_capacity\_MW              |     nameplate capacity                |     W         |     plant-specific; from PLEXOS                 |                |
-|     fm          |     efficiency\_penstock\_flexibility    |     penstock   intake scale factor    |     –         |     plant-specific; calibrated   in step two    |     0.5-1.5    |
+| fp       | penstock\_flexibility | penstock flexibility of handling   max flow | –     | plant-specific; calibrated in step   two | 0.5-1.5 |
 |     g           |                                          |     gravitational acceleration        |     m3s-2     |     9.81                                        |                |
 |     h           |     head                                 |     hydraulic head of the dam         |     m         |     plant-specific                              |                |
 
 Q is adjusted for spill by month using plant-specific monthly spill correction factors developed in step two of the calibration. These spill correction factors are applied as:
 
-$$ Q_sc,m =Q_m(1 -f_f,m); m = {1,2, ..., 12} \ (5) $$
+$$ Q_sc,m =Q_m(1 -f_s,m); m = {1,2, ..., 12} \ (5) $$
 
 | Variable | Variable in Code      | Definition                                  | Units | Value                                    | Range   |
 |----------|-----------------------|---------------------------------------------|-------|------------------------------------------|---------|
 | fs,m     | monthly\_spill        | monthly spill correction factors            | –     | plant-specific; calibrated in step   two | 0-1     |
-| fp       | penstock\_flexibility | penstock flexibility of handling   max flow | –     | plant-specific; calibrated in step   two | 0.5-1.5 |
 
 ##### Run-of-River (ROR) Facilities
 Generation for ROR plants is calculated using the hydropower generation formula and setting the head (h) to a fixed value equal to the dam height.
@@ -163,9 +165,9 @@ $$ h=H^3\sqrt{\frac{v}{v_{max}}} \ (6) $$
 ##### Shuffled Complex Evolution (SCE) Implementation
 SCE is used to implement a two-step multiscale calibration that produces the inputs required for the hydropower generation formula (equation 2). Step one of the calibration is to address the errors in annual hydro-meteorological biases at the scale of hydrologic regions. The objective function used in step one is to minimizes the mean absolute error between annual observed potential generation and annual simulated potential generation at the BA level:
 
-$$ PG_{BA,sim} =  \sum_{i=1}^n \rho gh_i Q_i f_{b,i} \ (6) $$
-$$ PG_{BA,obs} =  TL_{2010} \times 0.04 + \sum_{i=1}^n G_{obs,i} \ (7) $$
-$$ MAE_{PG} =  \sum_{i=1}^n \lvert PG_{BA_{sim,i}} - PG_{BA_{obs,i}} \rvert \ (8) $$
+$$ PG_{BA,sim} =  \sum_{i=1}^n \rho gh_i Q_i f_{p,i} \ (7) $$
+$$ PG_{BA,obs} =  TL_{2010} \times 0.04 + \sum_{i=1}^n G_{obs,i} \ (8) $$
+$$ MAE_{PG} =  \sum_{i=1}^n \lvert PG_{BA_{sim,i}} - PG_{BA_{obs,i}} \rvert \ (9) $$
 
 Potential generation is computed as:
 
