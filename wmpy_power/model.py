@@ -1092,7 +1092,7 @@ class Model:
             cols = 4
             rows = int(np.ceil(len(subset.eia_plant_id.unique()) / cols) + 1)
             
-            fig = plt.figure(dpi=300, figsize=(19.2, 19.2))
+            fig = plt.figure(dpi=100, figsize=(19.2, 19.2))
             gs = fig.add_gridspec(rows, cols)
         
             ba_ax = fig.add_subplot(gs[0, :])

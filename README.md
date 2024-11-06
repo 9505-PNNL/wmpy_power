@@ -419,8 +419,8 @@ We welcome your feedback! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 | **reservoir\_parameters\_path** | path to a CSV or parquet file with plant parameters and grouping | |
 | **flow\_and\_storage\_path** | path to a CSV or parquet file with plant daily flow and storage data | |
 | **run\_name** | name to prepend to the output file after the grouping name | |
-| start_year | first year for which to calculate generation; default is all available | -np.Inf |
-| end_year | final year for which to calculate generation; default is all available | np.Inf |
+| start_year | first year for which to calculate generation; default is all available | -np.inf |
+| end_year | final year for which to calculate generation; default is all available | np.inf |
 | write_output | whether or not to write the generation to file | True |
 | output_csv | whether to write the output file as CSV (otherwise parquet) | True |
 | output_path | path to which output files should be written | "." |
