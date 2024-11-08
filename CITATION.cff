@@ -1,24 +1,50 @@
-cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+cff-version: "1.2.0"
 authors:
-- family-names: "Thurber"
-  given-names: "Travis"
+- family-names: Thurber
+  given-names: Travis B.
   orcid: "https://orcid.org/0000-0002-4370-9971"
-- family-names: "Broman"
-  given-names: "Daniel"
+- family-names: Broman
+  given-names: Daniel
   orcid: "https://orcid.org/0000-0001-8281-3299"
-- family-names: "Zhou"
-  given-names: "Tian"
+- family-names: Zhou
+  given-names: Tian
   orcid: "https://orcid.org/0000-0003-1582-4005"
-- family-names: "Voisin"
-  given-names: "Nathalie"
+- family-names: Voisin
+  given-names: Nathalie
   orcid: "https://orcid.org/0000-0002-6848-449X"
-title: "wmpy-power: A Python package for process-based regional hydropower simulation"
-version: 1.0.0
-date-released: "2024-03-06"
-url: "https://github.com/9505-PNNL/wmpy_power"
-identifiers:
-  - description: "wmpy-power: A Python package for process-based regional hydropower simulation"
-    type: doi
-    value: ""
-    date-released: "" 
+contact:
+- family-names: Thurber
+  given-names: Travis B.
+  orcid: "https://orcid.org/0000-0002-4370-9971"
+doi: 10.5281/zenodo.14053013
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Thurber
+    given-names: Travis B.
+    orcid: "https://orcid.org/0000-0002-4370-9971"
+  - family-names: Broman
+    given-names: Daniel
+    orcid: "https://orcid.org/0000-0001-8281-3299"
+  - family-names: Zhou
+    given-names: Tian
+    orcid: "https://orcid.org/0000-0003-1582-4005"
+  - family-names: Voisin
+    given-names: Nathalie
+    orcid: "https://orcid.org/0000-0002-6848-449X"
+  date-published: 2024-11-08
+  doi: 10.21105/joss.07225
+  issn: 2475-9066
+  issue: 103
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7225
+  title: "wmpy-power: A Python package for process-based regional
+    hydropower simulation"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07225"
+  volume: 9
+title: "wmpy-power: A Python package for process-based regional
+  hydropower simulation"
