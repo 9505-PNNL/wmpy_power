@@ -1,3 +1,5 @@
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.07225/status.svg)](https://doi.org/10.21105/joss.07225)
+
 # wmpy-power
 
 `wmpy-power` is a hydropower simulation model developed to support long-term planning and climate impacts studies. It simulates hydropower production at the facility-scale using simulations of managed streamflow and reservoir storage to account for the “non-stationarity” in hydropower generation to changes in hydrology, and the non-linearity in the effect that climate change has on water management. Alternative approaches for estimating hydropower use statistical methods that relate runoff directly to hydropower generation and potentially miss the complex interactions arising from human water management, and hydropower production as water availability changes.
